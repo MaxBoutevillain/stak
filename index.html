@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>stak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sand-50:  #FAF8F5;
+  --sand-100: #F2EDE6;
+  --sand-200: #E4DDD2;
+  --sand-300: #C9BFB2;
+  --stone-400: #9E9488;
+  --stone-500: #7A7169;
+  --stone-700: #3D3830;
+  --stone-900: #1C1915;
+  --accent:   #6B5E52;
+  --r: 8px;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--sand-50);
+  color: var(--stone-900);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LOCK ── */
+#lock-screen {
+  position: fixed; inset: 0;
+  background: var(--sand-50);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  z-index: 100;
+}
+
+.lock-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--stone-900);
+  letter-spacing: -0.03em;
+}
+
+.lock-sub {
+  font-size: 12px;
+  color: var(--stone-400);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: -24px;
+}
+
+.lock-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 240px;
+}
+
+.lock-input {
+  width: 100%;
+  padding: 11px 16px;
+  background: white;
+  border: 1px solid var(--sand-200);
+  border-radius: var(--r);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--stone-900);
+  outline: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  transition: border-color 0.2s;
+}
+.lock-input::placeholder { letter-spacing: 0.04em; color: var(--stone-400); }
+.lock-input:focus { border-color: var(--accent); }
+.lock-input.error { border-color: #c0392b; animation: shake 0.28s; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  30% { transform: translateX(-7px); }
+  70% { transform: translateX(7px); }
+}
+
+.lock-btn {
+  padding: 11px;
+  background: var(--stone-900);
+  color: var(--sand-50);
+  border: none;
+  border-radius: var(--r);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.lock-btn:hover { background: var(--accent); }
+
+/* ── APP ── */
+#app {
+  display: none;
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 40px 28px 64px;
+}
+
+/* ── HEADER ── */
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.app-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--stone-900);
+}
+
+.app-title em {
+  font-style: italic;
+  color: var(--stone-400);
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-btn {
+  width: 28px; height: 28px;
+  background: none;
+  border: 1px solid var(--sand-200);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--stone-500);
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.nav-btn:hover { border-color: var(--stone-400); color: var(--stone-900); }
+
+.week-label {
+  font-size: 12px;
+  color: var(--stone-400);
+  letter-spacing: 0.04em;
+  min-width: 130px;
+  text-align: center;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--sand-200);
+}
+
+.tab-btn {
+  padding: 9px 20px 11px;
+  background: none;
+  border: none;
+  border-bottom: 1.5px solid transparent;
+  margin-bottom: -1px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--stone-400);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--stone-700); }
+.tab-btn.active {
+  color: var(--stone-900);
+  border-bottom-color: var(--stone-900);
+  font-weight: 500;
+}
+
+.dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #a3c99a;
+  margin-left: 7px;
+  vertical-align: middle;
+  position: relative; top: -1px;
+}
+
+/* ── GRID ── */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.day-col {
+  background: white;
+  border: 1px solid var(--sand-200);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.day-col:hover { border-color: var(--sand-300); }
+.day-col.today { border-color: var(--accent); }
+
+.day-header {
+  padding: 9px 10px 7px;
+  border-bottom: 1px solid var(--sand-100);
+}
+
+.day-name {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--stone-400);
+}
+.day-col.today .day-name { color: var(--accent); }
+
+.day-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--stone-900);
+  line-height: 1.15;
+  margin-top: 1px;
+}
+.day-col.today .day-num { color: var(--accent); }
+
+.tasks {
+  padding: 6px 8px 2px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 4px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.1s;
+  group: true;
+}
+.task-item:hover { background: var(--sand-50); }
+
+.task-check {
+  width: 13px; height: 13px;
+  min-width: 13px;
+  border: 1px solid var(--sand-300);
+  border-radius: 3px;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  font-size: 8px;
+  color: transparent;
+  flex-shrink: 0;
+}
+.task-item.done .task-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.task-text {
+  font-size: 11.5px;
+  font-weight: 300;
+  color: var(--stone-700);
+  line-height: 1.45;
+  flex: 1;
+  word-break: break-word;
+}
+.task-item.done .task-text {
+  text-decoration: line-through;
+  color: var(--stone-400);
+}
+
+.task-del {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sand-300);
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+  font-weight: 300;
+  transition: color 0.1s;
+  flex-shrink: 0;
+}
+.task-item:hover .task-del { display: block; }
+.task-del:hover { color: var(--stone-500); }
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 9px;
+}
+
+.plus-icon {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--sand-300);
+  min-width: 13px;
+  line-height: 1;
+}
+
+.add-input {
+  font-size: 11.5px;
+  font-weight: 300;
+  border: none;
+  background: none;
+  color: var(--stone-700);
+  outline: none;
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+}
+.add-input::placeholder { color: var(--sand-300); font-size: 11px; }
+
+/* ── OBJECTIVE ── */
+.objective-wrap {
+  margin-top: 4px;
+}
+
+.obj-label {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--stone-400);
+  margin-bottom: 10px;
+}
+
+.objective-block {
+  background: white;
+  border: 1px solid var(--sand-200);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.obj-line {
+  width: 2px;
+  min-width: 2px;
+  align-self: stretch;
+  background: var(--sand-200);
+  border-radius: 2px;
+  margin-top: 2px;
+}
+
+.objective-input {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--stone-700);
+  resize: none;
+  outline: none;
+  min-height: 52px;
+  line-height: 1.7;
+}
+.objective-input::placeholder { color: var(--sand-300); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div id="lock-screen">
+  <p class="lock-sub">espace privé</p>
+  <h1 class="lock-title">stak</h1>
+  <div class="lock-form">
+    <input type="password" id="pwd-input" class="lock-input" placeholder="mot de passe" autocomplete="off" />
+    <button class="lock-btn" onclick="checkPassword()">entrer</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="app-header">
+    <span class="app-title">stak</span>
+    <div class="week-nav">
+      <button class="nav-btn" onclick="shiftWeek(-1)">&#8249;</button>
+      <span class="week-label" id="week-label"></span>
+      <button class="nav-btn" onclick="shiftWeek(1)">&#8250;</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('maxime')" id="tab-maxime">
+      Maxime <span class="dot"></span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('arnaud')" id="tab-arnaud">
+      Arnaud <span class="dot"></span>
+    </button>
+  </div>
+
+  <div id="panel-maxime" class="tab-panel active">
+    <div class="week-grid" id="grid-maxime"></div>
+  </div>
+  <div id="panel-arnaud" class="tab-panel">
+    <div class="week-grid" id="grid-arnaud"></div>
+  </div>
+
+  <div class="objective-wrap">
+    <div class="obj-label">objectif de la semaine</div>
+    <div class="objective-block">
+      <div class="obj-line"></div>
+      <textarea class="objective-input" id="objective-input" placeholder="Quel est l'objectif principal cette semaine ?" rows="2"></textarea>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — remplace ces 3 valeurs
+// ─────────────────────────────────────────────
+const SUPABASE_URL  = 'https://lhkvtsdovljrsxrskxmk.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxoa3Z0c2RvdmxqcnN4cnNreG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk5NDUsImV4cCI6MjA5NjQ1NTk0NX0.TYkjYlBbaE7PRBPLRluxqhtp5sisgdkfp_WIrWKlxd0';
+const PASSWORD      = 'St@k.2026A&M';
+// ─────────────────────────────────────────────
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const DAYS   = ['lun','mar','mer','jeu','ven','sam','dim'];
+const MONTHS = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+
+let weekOffset = 0;
+let activeTab  = 'maxime';
+let objDebounce = null;
+
+function checkPassword() {
+  const v = document.getElementById('pwd-input').value;
+  if (v === PASSWORD) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    const inp = document.getElementById('pwd-input');
+    inp.classList.add('error');
+    inp.value = '';
+    setTimeout(() => inp.classList.remove('error'), 500);
+  }
+}
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+function getWeekStart(offset) {
+  const now  = new Date();
+  const diff = (now.getDay() === 0 ? -6 : 1 - now.getDay());
+  const mon  = new Date(now);
+  mon.setDate(now.getDate() + diff + offset * 7);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function dateKey(d) { return d.toISOString().slice(0,10); }
+
+function isToday(d) {
+  const t = new Date();
+  return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
+}
+
+function weekKey() { return dateKey(getWeekStart(weekOffset)); }
+
+async function renderGrid(user) {
+  const monday = getWeekStart(weekOffset);
+  const friday = new Date(monday); friday.setDate(monday.getDate()+4);
+  document.getElementById('week-label').textContent =
+    monday.getDate()+' '+MONTHS[monday.getMonth()]+' – '+friday.getDate()+' '+MONTHS[friday.getMonth()];
+
+  const start = dateKey(monday);
+  const end   = dateKey(new Date(monday.getTime() + 6*86400000));
+
+  const { data: tasks } = await db
+    .from('tasks')
+    .select('*')
+    .eq('user_name', user)
+    .gte('day', start)
+    .lte('day', end)
+    .order('created_at', { ascending: true });
+
+  const grid = document.getElementById('grid-' + user);
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d   = new Date(monday); d.setDate(monday.getDate()+i);
+    const key = dateKey(d);
+    const dayTasks = (tasks||[]).filter(t => t.day === key);
+
+    const col = document.createElement('div');
+    col.className = 'day-col' + (isToday(d) ? ' today' : '');
+    col.innerHTML = `
+      <div class="day-header">
+        <div class="day-name">${DAYS[i]}</div>
+        <div class="day-num">${d.getDate()}</div>
+      </div>
+      <div class="tasks">
+        ${dayTasks.map(t => `
+          <div class="task-item${t.done?' done':''}" onclick="toggleTask(${t.id},'${user}')">
+            <div class="task-check">${t.done?'✓':''}</div>
+            <span class="task-text">${esc(t.text)}</span>
+            <button class="task-del" onclick="event.stopPropagation();deleteTask(${t.id},'${user}')">×</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="add-row">
+        <span class="plus-icon">+</span>
+        <input class="add-input" placeholder="ajouter…"
+          onkeydown="if(event.key==='Enter'&&this.value.trim()){addTask('${key}','${user}',this.value);this.value=''}" />
+      </div>
+    `;
+    grid.appendChild(col);
+  }
+}
+
+async function renderObjective() {
+  const { data } = await db.from('objectives').select('text').eq('week_key', weekKey()).maybeSingle();
+  document.getElementById('objective-input').value = data?.text || '';
+}
+
+async function addTask(day, user, text) {
+  await db.from('tasks').insert({ day, user_name: user, text: text.trim(), done: false });
+  renderGrid(user);
+}
+
+async function toggleTask(id, user) {
+  const { data } = await db.from('tasks').select('done').eq('id', id).single();
+  await db.from('tasks').update({ done: !data.done }).eq('id', id);
+  renderGrid(user);
+}
+
+async function deleteTask(id, user) {
+  await db.from('tasks').delete().eq('id', id);
+  renderGrid(user);
+}
+
+document.getElementById('objective-input').addEventListener('input', function() {
+  clearTimeout(objDebounce);
+  const val = this.value;
+  objDebounce = setTimeout(async () => {
+    await db.from('objectives').upsert({ week_key: weekKey(), text: val }, { onConflict: 'week_key' });
+  }, 600);
+});
+
+function subscribeRealtime() {
+  db.channel('tasks-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+      renderGrid(activeTab);
+    })
+    .subscribe();
+
+  db.channel('obj-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'objectives' }, payload => {
+      if (payload.new?.week_key === weekKey()) {
+        const inp = document.getElementById('objective-input');
+        if (document.activeElement !== inp) inp.value = payload.new.text || '';
+      }
+    })
+    .subscribe();
+}
+
+function switchTab(user) {
+  activeTab = user;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+user).classList.add('active');
+  document.getElementById('panel-'+user).classList.add('active');
+  renderGrid(user);
+}
+
+function shiftWeek(dir) {
+  weekOffset += dir;
+  renderGrid('maxime');
+  renderGrid('arnaud');
+  renderObjective();
+}
+
+function init() {
+  renderGrid('maxime');
+  renderGrid('arnaud');
+  renderObjective();
+  subscribeRealtime();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
