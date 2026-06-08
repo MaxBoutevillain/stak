@@ -20,7 +20,7 @@
   --stone-700: #3D3830;
   --stone-900: #1C1915;
   --accent:   #6B5E52;
-  --r: 8px;
+  --r: 10px;
 }
 
 html, body {
@@ -53,9 +53,9 @@ html, body {
 }
 
 .lock-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--stone-400);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-top: -24px;
 }
@@ -109,17 +109,19 @@ html, body {
 /* ── APP ── */
 #app {
   display: none;
-  max-width: 1020px;
-  margin: 0 auto;
-  padding: 40px 28px 64px;
+  width: 100%;
+  padding: 0;
 }
 
 /* ── HEADER ── */
 .app-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 36px;
+  padding: 0 24px;
+  height: 44px;
+  border-bottom: 1px solid var(--sand-200);
+  margin-bottom: 0;
 }
 
 .app-title {
@@ -130,11 +132,6 @@ html, body {
   color: var(--stone-900);
 }
 
-.app-title em {
-  font-style: italic;
-  color: var(--stone-400);
-}
-
 .week-nav {
   display: flex;
   align-items: center;
@@ -142,14 +139,14 @@ html, body {
 }
 
 .nav-btn {
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   background: none;
   border: 1px solid var(--sand-200);
   border-radius: 50%;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   color: var(--stone-500);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
   transition: all 0.15s;
 }
@@ -159,20 +156,20 @@ html, body {
   font-size: 12px;
   color: var(--stone-400);
   letter-spacing: 0.04em;
-  min-width: 130px;
+  min-width: 140px;
   text-align: center;
 }
 
 /* ── TABS ── */
 .tabs {
   display: flex;
-  gap: 0;
-  margin-bottom: 24px;
+  margin-bottom: 0;
   border-bottom: 1px solid var(--sand-200);
+  padding: 0 24px;
 }
 
 .tab-btn {
-  padding: 9px 20px 11px;
+  padding: 9px 22px 11px;
   background: none;
   border: none;
   border-bottom: 1.5px solid transparent;
@@ -206,23 +203,36 @@ html, body {
 .week-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
-  margin-bottom: 18px;
+  gap: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--sand-200);
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.tab-panel {
+  display: none;
 }
 
 .day-col {
   background: white;
-  border: 1px solid var(--sand-200);
-  border-radius: var(--r);
+  border-right: 1px solid var(--sand-200);
+  border-radius: 0;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: none;
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
 }
-.day-col:hover { border-color: var(--sand-300); }
-.day-col.today { border-color: var(--accent); }
+.day-col:last-child { border-right: none; }
+.day-col.today { background: var(--sand-50); }
 
 .day-header {
-  padding: 9px 10px 7px;
+  padding: 16px 16px 10px;
   border-bottom: 1px solid var(--sand-100);
+  flex-shrink: 0;
 }
 
 .day-name {
@@ -236,43 +246,44 @@ html, body {
 
 .day-num {
   font-family: 'DM Serif Display', serif;
-  font-size: 21px;
+  font-size: 32px;
   font-weight: 400;
   color: var(--stone-900);
-  line-height: 1.15;
-  margin-top: 1px;
+  line-height: 1.1;
+  margin-top: 2px;
 }
 .day-col.today .day-num { color: var(--accent); }
 
 .tasks {
-  padding: 6px 8px 2px;
-  min-height: 96px;
+  padding: 10px 16px 4px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
 }
 
 .task-item {
   display: flex;
   align-items: flex-start;
-  gap: 7px;
-  padding: 4px 5px;
-  border-radius: 5px;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sand-100);
   cursor: pointer;
   transition: background 0.1s;
-  group: true;
+  position: relative;
 }
-.task-item:hover { background: var(--sand-50); }
+.task-item:last-child { border-bottom: none; }
+.task-item:hover { background: none; }
 
 .task-check {
-  width: 13px; height: 13px;
-  min-width: 13px;
+  width: 14px; height: 14px;
+  min-width: 14px;
   border: 1px solid var(--sand-300);
   border-radius: 3px;
   margin-top: 2px;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
-  font-size: 8px;
+  font-size: 9px;
   color: transparent;
   flex-shrink: 0;
 }
@@ -282,52 +293,75 @@ html, body {
   color: white;
 }
 
+.task-body {
+  flex: 1;
+  min-width: 0;
+}
+
 .task-text {
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 300;
   color: var(--stone-700);
-  line-height: 1.45;
-  flex: 1;
+  line-height: 1.5;
   word-break: break-word;
+  display: block;
 }
 .task-item.done .task-text {
   text-decoration: line-through;
   color: var(--stone-400);
 }
 
-.task-del {
-  display: none;
+.task-note-preview {
+  font-size: 10.5px;
+  color: var(--stone-400);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+.task-actions {
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+}
+.task-item:hover .task-actions { opacity: 1; }
+
+.task-action-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--sand-300);
-  font-size: 14px;
-  padding: 0;
+  color: var(--stone-400);
+  font-size: 13px;
+  padding: 0 2px;
   line-height: 1;
-  font-weight: 300;
   transition: color 0.1s;
-  flex-shrink: 0;
 }
-.task-item:hover .task-del { display: block; }
-.task-del:hover { color: var(--stone-500); }
+.task-action-btn:hover { color: var(--stone-700); }
+.task-action-btn.del:hover { color: #c0392b; }
 
 .add-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px 9px;
+  gap: 8px;
+  padding: 8px 16px 16px;
+  flex-shrink: 0;
 }
 
 .plus-icon {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 300;
   color: var(--sand-300);
-  min-width: 13px;
+  min-width: 14px;
   line-height: 1;
 }
 
 .add-input {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 300;
   border: none;
   background: none;
@@ -338,33 +372,160 @@ html, body {
 }
 .add-input::placeholder { color: var(--sand-300); font-size: 11px; }
 
+/* ── DETAIL PANEL ── */
+.panel-overlay {
+  position: fixed; inset: 0;
+  background: rgba(28,25,21,0.3);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.panel-overlay.open { display: flex; }
+
+.detail-panel {
+  background: white;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-width: 560px;
+  padding: 28px 28px 40px;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.panel-overlay.open .detail-panel { transform: translateY(0); }
+
+.panel-handle {
+  width: 36px; height: 4px;
+  background: var(--sand-200);
+  border-radius: 2px;
+  margin: 0 auto -8px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-task-text {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--stone-900);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--stone-400);
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.panel-close:hover { color: var(--stone-900); }
+
+.panel-note-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--stone-400);
+}
+
+.panel-note {
+  width: 100%;
+  border: 1px solid var(--sand-200);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--stone-700);
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+  min-height: 100px;
+  transition: border-color 0.2s;
+}
+.panel-note:focus { border-color: var(--accent); }
+.panel-note::placeholder { color: var(--sand-300); }
+
+.panel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-done-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--sand-200);
+  border-radius: var(--r);
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--stone-500);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.panel-done-btn:hover { border-color: var(--accent); color: var(--accent); }
+.panel-done-btn.done {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.panel-del-btn {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--stone-400);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.panel-del-btn:hover { color: #c0392b; }
+
 /* ── OBJECTIVE ── */
 .objective-wrap {
-  margin-top: 4px;
+  padding: 24px 24px 48px;
+  border-top: 1px solid var(--sand-200);
 }
 
 .obj-label {
   font-size: 9px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   color: var(--stone-400);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .objective-block {
-  background: white;
-  border: 1px solid var(--sand-200);
-  border-radius: var(--r);
-  padding: 16px 20px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   display: flex;
   gap: 14px;
   align-items: flex-start;
 }
 
 .obj-line {
-  width: 2px;
-  min-width: 2px;
+  width: 2px; min-width: 2px;
   align-self: stretch;
   background: var(--sand-200);
   border-radius: 2px;
@@ -386,8 +547,7 @@ html, body {
 }
 .objective-input::placeholder { color: var(--sand-300); }
 
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+
 </style>
 </head>
 <body>
@@ -436,14 +596,32 @@ html, body {
   </div>
 </div>
 
+<!-- DETAIL PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel(event)">
+  <div class="detail-panel" id="detail-panel">
+    <div class="panel-handle"></div>
+    <div class="panel-header">
+      <span class="panel-task-text" id="panel-task-text"></span>
+      <button class="panel-close" onclick="closePanel(null)">×</button>
+    </div>
+    <div>
+      <div class="panel-note-label">note</div>
+      <textarea class="panel-note" id="panel-note" placeholder="Ajoute un détail, un lien, une info…" rows="4"></textarea>
+    </div>
+    <div class="panel-footer">
+      <button class="panel-done-btn" id="panel-done-btn" onclick="toggleDoneFromPanel()">
+        <span id="panel-done-check">○</span>
+        <span id="panel-done-label">marquer fait</span>
+      </button>
+      <button class="panel-del-btn" onclick="deleteFromPanel()">supprimer</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ─────────────────────────────────────────────
-// CONFIG — remplace ces 3 valeurs
-// ─────────────────────────────────────────────
 const SUPABASE_URL  = 'https://lhkvtsdovljrsxrskxmk.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxoa3Z0c2RvdmxqcnN4cnNreG1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk5NDUsImV4cCI6MjA5NjQ1NTk0NX0.TYkjYlBbaE7PRBPLRluxqhtp5sisgdkfp_WIrWKlxd0';
 const PASSWORD      = 'St@k.2026A&M';
-// ─────────────────────────────────────────────
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -451,9 +629,12 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 const DAYS   = ['lun','mar','mer','jeu','ven','sam','dim'];
 const MONTHS = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
 
-let weekOffset = 0;
-let activeTab  = 'maxime';
+let weekOffset  = 0;
+let activeTab   = 'maxime';
 let objDebounce = null;
+let noteDebounce = null;
+let currentTaskId   = null;
+let currentTaskUser = null;
 
 function checkPassword() {
   const v = document.getElementById('pwd-input').value;
@@ -517,20 +698,27 @@ async function renderGrid(user) {
 
     const col = document.createElement('div');
     col.className = 'day-col' + (isToday(d) ? ' today' : '');
+
+    const tasksHtml = dayTasks.map(t => `
+      <div class="task-item${t.done?' done':''}">
+        <div class="task-check" onclick="toggleTask(${t.id},'${user}')">${t.done?'✓':''}</div>
+        <div class="task-body" onclick="openPanel(${t.id},'${user}')">
+          <span class="task-text">${esc(t.text)}</span>
+          ${t.note ? `<span class="task-note-preview">${esc(t.note)}</span>` : ''}
+        </div>
+        <div class="task-actions">
+          <button class="task-action-btn" onclick="openPanel(${t.id},'${user}')" title="détail">↗</button>
+          <button class="task-action-btn del" onclick="deleteTask(${t.id},'${user}')" title="supprimer">×</button>
+        </div>
+      </div>
+    `).join('');
+
     col.innerHTML = `
       <div class="day-header">
         <div class="day-name">${DAYS[i]}</div>
         <div class="day-num">${d.getDate()}</div>
       </div>
-      <div class="tasks">
-        ${dayTasks.map(t => `
-          <div class="task-item${t.done?' done':''}" onclick="toggleTask(${t.id},'${user}')">
-            <div class="task-check">${t.done?'✓':''}</div>
-            <span class="task-text">${esc(t.text)}</span>
-            <button class="task-del" onclick="event.stopPropagation();deleteTask(${t.id},'${user}')">×</button>
-          </div>
-        `).join('')}
-      </div>
+      <div class="tasks">${tasksHtml}</div>
       <div class="add-row">
         <span class="plus-icon">+</span>
         <input class="add-input" placeholder="ajouter…"
@@ -555,6 +743,13 @@ async function toggleTask(id, user) {
   const { data } = await db.from('tasks').select('done').eq('id', id).single();
   await db.from('tasks').update({ done: !data.done }).eq('id', id);
   renderGrid(user);
+  if (currentTaskId === id) {
+    const newDone = !data.done;
+    const btn = document.getElementById('panel-done-btn');
+    btn.classList.toggle('done', newDone);
+    document.getElementById('panel-done-check').textContent = newDone ? '✓' : '○';
+    document.getElementById('panel-done-label').textContent = newDone ? 'fait !' : 'marquer fait';
+  }
 }
 
 async function deleteTask(id, user) {
@@ -562,6 +757,55 @@ async function deleteTask(id, user) {
   renderGrid(user);
 }
 
+// ── DETAIL PANEL ──
+async function openPanel(id, user) {
+  const { data: t } = await db.from('tasks').select('*').eq('id', id).single();
+  if (!t) return;
+
+  currentTaskId   = id;
+  currentTaskUser = user;
+
+  document.getElementById('panel-task-text').textContent = t.text;
+  document.getElementById('panel-note').value = t.note || '';
+
+  const btn = document.getElementById('panel-done-btn');
+  btn.classList.toggle('done', t.done);
+  document.getElementById('panel-done-check').textContent = t.done ? '✓' : '○';
+  document.getElementById('panel-done-label').textContent = t.done ? 'fait !' : 'marquer fait';
+
+  document.getElementById('panel-overlay').classList.add('open');
+}
+
+function closePanel(e) {
+  if (e && e.target !== document.getElementById('panel-overlay')) return;
+  document.getElementById('panel-overlay').classList.remove('open');
+  currentTaskId = null;
+  currentTaskUser = null;
+}
+
+document.getElementById('panel-note').addEventListener('input', function() {
+  clearTimeout(noteDebounce);
+  const val = this.value;
+  noteDebounce = setTimeout(async () => {
+    if (!currentTaskId) return;
+    await db.from('tasks').update({ note: val }).eq('id', currentTaskId);
+    renderGrid(currentTaskUser);
+  }, 500);
+});
+
+async function toggleDoneFromPanel() {
+  if (!currentTaskId) return;
+  await toggleTask(currentTaskId, currentTaskUser);
+}
+
+async function deleteFromPanel() {
+  if (!currentTaskId) return;
+  await deleteTask(currentTaskId, currentTaskUser);
+  document.getElementById('panel-overlay').classList.remove('open');
+  currentTaskId = null;
+}
+
+// ── OBJECTIVE ──
 document.getElementById('objective-input').addEventListener('input', function() {
   clearTimeout(objDebounce);
   const val = this.value;
