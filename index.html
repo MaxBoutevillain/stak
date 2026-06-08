@@ -500,9 +500,28 @@ html, body {
 .panel-del-btn:hover { color: #c0392b; }
 
 /* ── OBJECTIVE ── */
-.objective-wrap {
-  padding: 24px 24px 48px;
+/* ── BOTTOM SECTION ── */
+.bottom-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   border-top: 1px solid var(--sand-200);
+}
+
+.bottom-col {
+  padding: 24px 28px 48px;
+}
+
+.bottom-col:first-child {
+  border-right: 1px solid var(--sand-200);
+}
+
+.bottom-tab-panel { display: none; }
+.bottom-tab-panel.active { display: block; }
+
+.bottom-col-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .obj-label {
@@ -510,19 +529,11 @@ html, body {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--stone-400);
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.objective-block {
-  background: none;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
+.obj-label.wins { color: #a3c99a; }
+.obj-label.goals { color: var(--stone-400); }
 
 .obj-line {
   width: 2px; min-width: 2px;
@@ -532,7 +543,7 @@ html, body {
   margin-top: 2px;
 }
 
-.objective-input {
+.bottom-input {
   width: 100%;
   border: none;
   background: none;
@@ -542,10 +553,10 @@ html, body {
   color: var(--stone-700);
   resize: none;
   outline: none;
-  min-height: 52px;
-  line-height: 1.7;
+  min-height: 80px;
+  line-height: 1.8;
 }
-.objective-input::placeholder { color: var(--sand-300); }
+.bottom-input::placeholder { color: var(--sand-300); }
 
 
 </style>
@@ -587,11 +598,26 @@ html, body {
     <div class="week-grid" id="grid-arnaud"></div>
   </div>
 
-  <div class="objective-wrap">
-    <div class="obj-label">objectif de la semaine</div>
-    <div class="objective-block">
-      <div class="obj-line"></div>
-      <textarea class="objective-input" id="objective-input" placeholder="Quel est l'objectif principal cette semaine ?" rows="2"></textarea>
+  <div class="bottom-section">
+    <!-- VICTOIRES -->
+    <div class="bottom-col">
+      <div class="obj-label wins">✦ victoires de la semaine</div>
+      <div id="wins-panel-maxime" class="bottom-tab-panel active">
+        <textarea class="bottom-input" id="wins-maxime" placeholder="Ce qui s'est bien passé, les petites et grandes victoires…"></textarea>
+      </div>
+      <div id="wins-panel-arnaud" class="bottom-tab-panel">
+        <textarea class="bottom-input" id="wins-arnaud" placeholder="Ce qui s'est bien passé, les petites et grandes victoires…"></textarea>
+      </div>
+    </div>
+    <!-- OBJECTIFS -->
+    <div class="bottom-col">
+      <div class="obj-label goals">◎ objectif de la semaine</div>
+      <div id="goals-panel-maxime" class="bottom-tab-panel active">
+        <textarea class="bottom-input" id="goals-maxime" placeholder="Quel est l'objectif principal cette semaine ?"></textarea>
+      </div>
+      <div id="goals-panel-arnaud" class="bottom-tab-panel">
+        <textarea class="bottom-input" id="goals-arnaud" placeholder="Quel est l'objectif principal cette semaine ?"></textarea>
+      </div>
     </div>
   </div>
 </div>
@@ -805,14 +831,46 @@ async function deleteFromPanel() {
   currentTaskId = null;
 }
 
-// ── OBJECTIVE ──
-document.getElementById('objective-input').addEventListener('input', function() {
-  clearTimeout(objDebounce);
-  const val = this.value;
-  objDebounce = setTimeout(async () => {
-    await db.from('objectives').upsert({ week_key: weekKey(), text: val }, { onConflict: 'week_key' });
-  }, 600);
-});
+// ── WINS & GOALS ──
+async function renderBottomSection(user) {
+  const wk = weekKey();
+  const { data } = await db.from('objectives')
+    .select('wins, goals')
+    .eq('week_key', wk)
+    .eq('user_name', user)
+    .maybeSingle();
+
+  const winsEl  = document.getElementById('wins-' + user);
+  const goalsEl = document.getElementById('goals-' + user);
+  if (winsEl)  winsEl.value  = data?.wins  || '';
+  if (goalsEl) goalsEl.value = data?.goals || '';
+}
+
+function setupBottomListeners(user) {
+  let winsDb = null, goalsDb = null;
+
+  document.getElementById('wins-' + user).addEventListener('input', function() {
+    clearTimeout(winsDb);
+    const val = this.value;
+    winsDb = setTimeout(async () => {
+      await db.from('objectives').upsert(
+        { week_key: weekKey(), user_name: user, wins: val },
+        { onConflict: 'week_key,user_name' }
+      );
+    }, 600);
+  });
+
+  document.getElementById('goals-' + user).addEventListener('input', function() {
+    clearTimeout(goalsDb);
+    const val = this.value;
+    goalsDb = setTimeout(async () => {
+      await db.from('objectives').upsert(
+        { week_key: weekKey(), user_name: user, goals: val },
+        { onConflict: 'week_key,user_name' }
+      );
+    }, 600);
+  });
+}
 
 function subscribeRealtime() {
   db.channel('tasks-live')
@@ -823,10 +881,13 @@ function subscribeRealtime() {
 
   db.channel('obj-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'objectives' }, payload => {
-      if (payload.new?.week_key === weekKey()) {
-        const inp = document.getElementById('objective-input');
-        if (document.activeElement !== inp) inp.value = payload.new.text || '';
-      }
+      const n = payload.new;
+      if (!n || n.week_key !== weekKey()) return;
+      const user = n.user_name;
+      const winsEl  = document.getElementById('wins-' + user);
+      const goalsEl = document.getElementById('goals-' + user);
+      if (winsEl  && document.activeElement !== winsEl)  winsEl.value  = n.wins  || '';
+      if (goalsEl && document.activeElement !== goalsEl) goalsEl.value = n.goals || '';
     })
     .subscribe();
 }
@@ -835,8 +896,11 @@ function switchTab(user) {
   activeTab = user;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bottom-tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-'+user).classList.add('active');
   document.getElementById('panel-'+user).classList.add('active');
+  document.getElementById('wins-panel-'+user).classList.add('active');
+  document.getElementById('goals-panel-'+user).classList.add('active');
   renderGrid(user);
 }
 
@@ -844,13 +908,17 @@ function shiftWeek(dir) {
   weekOffset += dir;
   renderGrid('maxime');
   renderGrid('arnaud');
-  renderObjective();
+  renderBottomSection('maxime');
+  renderBottomSection('arnaud');
 }
 
 function init() {
   renderGrid('maxime');
   renderGrid('arnaud');
-  renderObjective();
+  renderBottomSection('maxime');
+  renderBottomSection('arnaud');
+  setupBottomListeners('maxime');
+  setupBottomListeners('arnaud');
   subscribeRealtime();
 }
 
